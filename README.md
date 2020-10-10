@@ -1,4 +1,5 @@
 
 # go-java-class-parser
 
-forked from https://github.com/tinycedar/classp
+Forked from https://github.com/wreulicke/go-java-class-parser which is in turn forked from https://github.com/tinycedar/classp
+
