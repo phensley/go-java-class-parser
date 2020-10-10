@@ -1,3 +1,5 @@
-module github.com/wreulicke/go-java-class-parser
+module github.com/phensley/go-java-class-parser
 
 go 1.13
+
+require github.com/stretchr/testify v1.6.1

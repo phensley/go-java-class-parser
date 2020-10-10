@@ -30,7 +30,7 @@ type ClassFile struct {
 	minorVersion uint16
 	majorVersion uint16
 	constantPool ConstantPool
-	accessFlags  uint16
+	accessFlags  ClassAccessFlag
 	thisClass    uint16
 	superClass   uint16
 	interfaces   []uint16
@@ -39,11 +39,13 @@ type ClassFile struct {
 	attributes   []AttributeInfo
 }
 
+// Parse a class file from raw bytes
 func Parse(bytes []byte) *ClassFile {
 	reader := NewClassReader(bytes)
 	return ParseFromClassReader(reader)
 }
 
+// ParseFromClassReader parses a class from a class reader
 func ParseFromClassReader(reader IClassReader) *ClassFile {
 	cf := &ClassFile{}
 	cf.size = reader.Length()
@@ -51,7 +53,7 @@ func ParseFromClassReader(reader IClassReader) *ClassFile {
 	cf.minorVersion = reader.ReadUint16()
 	cf.majorVersion = reader.ReadUint16()
 	cf.constantPool = readConstantPool(reader)
-	cf.accessFlags = reader.ReadUint16()
+	cf.accessFlags = ClassAccessFlag(reader.ReadUint16())
 	cf.thisClass = reader.ReadUint16()
 	cf.superClass = reader.ReadUint16()
 	cf.readInterfaces(reader)
@@ -69,18 +71,71 @@ func (cf *ClassFile) readInterfaces(reader IClassReader) {
 	}
 }
 
+// Size of the class in bytes
+func (cf *ClassFile) Size() int {
+	return cf.size
+}
+
+// Magic number of the class file
+func (cf *ClassFile) Magic() uint32 {
+	return cf.magic
+}
+
+// MajorVersion of the class file
+func (cf *ClassFile) MajorVersion() uint16 {
+	return cf.majorVersion
+}
+
+// MinorVersion of the class file
+func (cf *ClassFile) MinorVersion() uint16 {
+	return cf.minorVersion
+}
+
+// ConstantPool holds all constant values in the class file
 func (cf *ClassFile) ConstantPool() ConstantPool {
 	return cf.constantPool
 }
 
+// AccessFlags for the class
+func (cf *ClassFile) AccessFlags() ClassAccessFlag {
+	return cf.accessFlags
+}
+
+// ThisClass name
+func (cf *ClassFile) ThisClass() string {
+	return cf.constantPool.getClassName(cf.thisClass)
+}
+
+// SuperClass name
+func (cf *ClassFile) SuperClass() string {
+	return cf.constantPool.getClassName(cf.superClass)
+}
+
+// Interfaces names as strings
+func (cf *ClassFile) Interfaces() []string {
+	r := []string{}
+	for _, i := range cf.interfaces {
+		r = append(r, cf.constantPool.getClassName(i))
+	}
+	return r
+}
+
+// Fields info
+func (cf *ClassFile) Fields() []MemberInfo {
+	return cf.fields
+}
+
+// Methods info
 func (cf *ClassFile) Methods() []MemberInfo {
 	return cf.methods
 }
 
+// Attributes info
 func (cf *ClassFile) Attributes() []AttributeInfo {
 	return cf.attributes
 }
 
+// Print the class info
 func (cf *ClassFile) Print() {
 	fmt.Printf("Size: %d bytes\n", cf.size)
 	fmt.Printf("magic: %x\n", cf.magic)
